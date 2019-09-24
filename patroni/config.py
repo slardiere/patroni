@@ -241,6 +241,7 @@ class Config(object):
                     ret[section][param] = value
 
         _set_section_values('restapi', ['listen', 'connect_address', 'certfile', 'keyfile'])
+        _set_section_values('ctl', ['insecure', 'cacert', 'certfile'])
         _set_section_values('postgresql', ['listen', 'connect_address', 'config_dir', 'data_dir', 'pgpass', 'bin_dir'])
         _set_section_values('log', ['level', 'format', 'dateformat', 'max_queue_size',
                                     'dir', 'file_size', 'file_num', 'loggers'])
