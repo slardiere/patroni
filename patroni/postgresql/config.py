@@ -147,6 +147,51 @@ def parse_dsn(value):
     return ret
 
 
+def read_recovery_param_value(value):
+    """
+    >>> read_recovery_param_value('') is None
+    True
+    >>> read_recovery_param_value("'") is None
+    True
+    >>> read_recovery_param_value('a b') is None
+    True
+    >>> read_recovery_param_value("'''") is None
+    True
+    >>> read_recovery_param_value("'\\\\'") is None
+    True
+    >>> read_recovery_param_value("'\\\\''''")
+    "''"
+    >>> read_recovery_param_value('asd')
+    'asd'
+    """
+    value = value.strip()
+    length = len(value)
+    if length == 0:
+        return None
+    elif value[0] == "'":
+        if length == 1 or value[-1] != "'":
+            return None
+        value = value[1:-1]
+        length -= 2
+        ret = ''
+        i = 0
+        while i < length:
+            if value[i] == '\\':
+                i += 1
+                if i >= length:
+                    return None
+            elif value[i] == "'":
+                i += 1
+                if i >= length or value[i] != "'":
+                    return None
+            ret += value[i]
+            i += 1
+        return ret
+    elif ' ' in value or '\\' in value:
+        return None
+    return value
+
+
 def mtime(filename):
     try:
         return os.stat(filename).st_mtime
@@ -475,9 +520,7 @@ class ConfigHandler(object):
                 value = None
                 match = PARAMETER_RE.match(line)
                 if match:
-                    i = match.end()
-                    if i < len(line):
-                        value, _ = read_param_value(line[i:])
+                    value = read_recovery_param_value(line[match.end():])
                 if value is None:
                     return None, True
                 values[match.group(1)] = [value, True]
